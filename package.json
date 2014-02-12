@@ -10,7 +10,7 @@
     "kss",
     "documentation",
     "styleguide",
-    "generator"
+    "generator",
     "gulp"
   ],
   "contributor": {
