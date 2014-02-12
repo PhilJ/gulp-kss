@@ -8,9 +8,9 @@ This plugin currently lacks tests.
 
 ## Install
 
-´´´
+```
 npm install gulp-kss
-´´´
+```
 
 ## Usage
 
@@ -18,7 +18,7 @@ Pipe all source files you want to document through `gulp-kss`, also the ones whi
 
 In addition to that you need to create a concated and compiled version of your styles at `public/style.css`. 
 
-´´´javascript
+```javascript
 var gulp = require('gulp');
 var gulpless = require('gulp-less');
 var gulpkss = require('gulp-kss');
@@ -35,7 +35,7 @@ gulp.src('styles/main.less')
     .pipe(gulpless())
     .pipe(gulpconcat('public/style.css'))
     .pipe(gulp.dest('styleguide/'));
-´´´
+```
 
 ## Options
 
