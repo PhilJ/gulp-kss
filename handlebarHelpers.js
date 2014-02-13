@@ -38,6 +38,7 @@ module.exports = function (handlebars, styleguide) {
     handlebars.registerHelper('eachSection', function(query) {
         var sections,
             i, l, buffer = "";
+        query = (typeof query === 'string') ? query : query.toString();
 
         if (!query.match(/x|\*/g)) {
             query = new RegExp('^' + query + '$|^' + query + "\\..*");
