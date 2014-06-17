@@ -125,18 +125,33 @@ module.exports = function(opt) {
                 .pipe(gulpless())
                 .pipe(through(function (file) {
 
-                self.emit('data', file);
-            }));
+                  self.emit('data', file);
+                }).on('end', function() {
+                  emitEnd(self);
+                }));
 
             gulp.src(path.join(opt.templateDirectory, '/**/*.js'))
                 .pipe(through(function (file) {
 
-                self.emit('data', file);
-            }));
-
+                  self.emit('data', file);
+                }).on('end', function() {
+                  emitEnd(self);
+                }));
         });
-
     }
+
+    // duplicate of underscore's _.after() function http://underscorejs.org/docs/underscore.html#section-76
+    var underscoreAfter = function underscoreAfter(times, func) {
+      return function() {
+        if (--times < 1) {
+          return func.apply(this, arguments);
+        }
+      };
+    };
+
+    var emitEnd = underscoreAfter(2, function emitEnd(self) {
+      self.emit('end');
+    });
 
     function jsonSections(sections) {
         return sections.map(function(section) {
