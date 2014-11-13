@@ -2,32 +2,13 @@ var kss = require('kss')
 
 module.exports = function (handlebars, styleguide) {
     /**
-     * Equivalent to the {#if} block helper with multiple arguments.
-     */
-    handlebars.registerHelper('ifAny', function() {
-        var argLength = arguments.length - 2,
-            content = arguments[argLength + 1],
-            success = true;
-
-        for (var i = 0; i < argLength; i += 1) {
-            if (!arguments[i]) {
-                success = false;
-                break;
-            }
-        }
-
-        return success ? content.fn(this) : content.inverse(this);
-    });
-
-    /**
      * Returns a single section, found by its reference number
      * @param  {String|Number} reference The reference number to search for.
      */
-    handlebars.registerHelper('section', function(reference) {
+    handlebars.registerHelper('section', function(reference, options) {
         var section = styleguide.section(reference);
-        if (!section) return false;
 
-        return arguments[arguments.length-1](section.data);
+        return section ? options.fn(section.data) : false;
     });
 
     /**
@@ -35,21 +16,20 @@ module.exports = function (handlebars, styleguide) {
      * a query for all children and descendants of that reference.
      * @param  {Mixed} query The section query
      */
-    handlebars.registerHelper('eachSection', function(query) {
-        var sections,
-            i, l, buffer = "";
-        query = (typeof query === 'string') ? query : query.toString();
+    handlebars.registerHelper('eachSection', function(query, options) {
+        var buffer = '',
+            sections,
+            i, l;
 
         if (!query.match(/x|\*/g)) {
             query = new RegExp('^' + query + '$|^' + query + "\\..*");
         }
         sections = styleguide.section(query);
-
         if (!sections) return '';
 
         l = sections.length;
         for (i = 0; i < l; i += 1) {
-            buffer += arguments[arguments.length-1].fn(sections[i].data);
+            buffer += options.fn(sections[i].data);
         }
 
         return buffer;
@@ -58,16 +38,17 @@ module.exports = function (handlebars, styleguide) {
     /**
      * Loop over each section root, i.e. each section only one level deep.
      */
-    handlebars.registerHelper('eachRoot', function() {
-        var sections,
-            i, l, buffer = "";
+    handlebars.registerHelper('eachRoot', function(options) {
+        var buffer = '',
+            sections,
+            i, l;
 
         sections = styleguide.section('x');
         if (!sections) return '';
 
         l = sections.length;
         for (i = 0; i < l; i += 1) {
-            buffer += arguments[arguments.length-1].fn(sections[i].data);
+            buffer += options.fn(sections[i].data);
         }
 
         return buffer;
@@ -76,40 +57,53 @@ module.exports = function (handlebars, styleguide) {
     /**
      * Equivalent to "if the current section is X levels deep". e.g:
      *
-     * {{#refDepth 1}}
+     * {{#ifDepth 1}}
      *   ROOT ELEMENTS ONLY
      *  {{else}}
      *   ANYTHING ELSE
-     * {{/refDepth}}
+     * {{/ifDepth}}
      */
-    handlebars.registerHelper('whenDepth', function(depth, context) {
-        if (!(context && this.refDepth)) {
+    handlebars.registerHelper('ifDepth', function(depth, options) {
+        if (!this.refDepth) {
             return '';
         }
-        if (depth == this.refDepth) {
-            return context.fn(this);
+        return (depth == this.refDepth) ? options.fn(this) : options.inverse(this);
+    });
+
+    /**
+     * Equivalent to "unless the current section is X levels deep". e.g:
+     *
+     * {{#unlessDepth 1}}
+     *   ANYTHING ELSE
+     *  {{else}}
+     *   ROOT ELEMENTS ONLY
+     * {{/unlessDepth}}
+     */
+    handlebars.registerHelper('unlessDepth', function(depth, options) {
+        if (!this.refDepth) {
+            return '';
         }
-        if (context.inverse) {
-            return context.inverse(this);
-        }
+        return (depth == this.refDepth) ? options.inverse(this) : options.fn(this);
     });
 
     /**
      * Similar to the {#eachSection} helper, however will loop over each modifier
      * @param  {Object} section Supply a section object to loop over it's modifiers. Defaults to the current section.
      */
-    handlebars.registerHelper('eachModifier', function(section) {
-        var modifiers, i, l, buffer = '';
+    handlebars.registerHelper('eachModifier', function() {
+        var modifiers,
+            options = arguments[arguments.length - 1],
+            buffer = '',
+            i, l;
 
-        // Default to current modifiers, but allow supplying a custom section
-        if (section.data) modifiers = section.data.modifiers;
-        modifiers = modifiers || this.modifiers || false;
+        // Default to current modifiers, but allow supplying a custom section.
+        modifiers = (arguments.length > 1 && arguments[0].data) ? arguments[0].data.modifiers : this.modifiers;
 
         if (!modifiers) return {};
 
         l = modifiers.length;
         for (i = 0; i < l; i++) {
-            buffer += arguments[arguments.length-1].fn(modifiers[i].data || '');
+            buffer += options.fn(modifiers[i].data || '');
         }
         return buffer;
     });
@@ -143,7 +137,43 @@ module.exports = function (handlebars, styleguide) {
      * @param  {String} arg The unescaped HTML
      */
     handlebars.registerHelper('html', function(arg) {
+        // Warn the user that html is deprecated.
+        console.log('{{html expression}} is deprecated; use HandleBars’ triple-stash instead: {{{expression}}}.');
+
         return new handlebars.SafeString(arg || '');
+    });
+
+    /**
+     * Equivalent to the {#if} block helper with multiple arguments.
+     */
+    handlebars.registerHelper('ifAny', function() {
+        var numItems = arguments.length - 1,
+            options = arguments[numItems],
+            success = true,
+            i;
+
+        // Warn the user that IfAny is deprecated. The only usage in kss-node was
+        // {{#ifAny markup modifiers}} and, since modifiers is an object and, always
+        // evals to true (even when empty), #ifAny was effectively a dupe of #If.
+        console.log('IfAny is deprecated; if your template has {{#ifAny markup modifiers}}...{{/ifAny}}, replace it with {{#if markup}}...{{/if}}.');
+
+        for (i = 0; i < numItems; i += 1) {
+            if (!arguments[i]) {
+                success = false;
+                break;
+            }
+        }
+
+        return success ? options.fn(this) : options.inverse(this);
+    });
+
+    /**
+     * Equivalent to "if the current section is X levels deep".
+     */
+    handlebars.registerHelper('whenDepth', function(depth, options) {
+        // Warn the user that whenDepth is deprecated.
+        console.log('{{whenDepth expression}} is deprecated; use {{ifDepth expression}} instead.');
+        return handlebars.helpers.ifDepth.call(this, depth, options);
     });
 
     return handlebars;
