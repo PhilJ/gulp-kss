@@ -149,7 +149,6 @@ module.exports = function(opt) {
             if (fs.existsSync(opt.helpers)) {
                 var helperFiles = fs.readdirSync(opt.helpers);
                 helperFiles.forEach(function(fileName) {
-                    console.log(fileName);
                     if (path.extname(fileName) !== '.js') {
                         return;
                     }
