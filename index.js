@@ -1,18 +1,18 @@
-var fs = require('fs'),
-    gulp = require('gulp'),
-    kss = require('kss'),
-    path = require('path'),
-    gutil = require('gulp-util'),
-    util = require('util'),
-    assign = require('object-assign'),
-    handlebars = require('handlebars'),
-    gulpless = require('gulp-less'),
-    sass = require('gulp-sass'),
-    File = require('vinyl'),
-    through = require('through'),
-    custom = [],
+var fs          = require('fs'),
+    gulp        = require('gulp'),
+    kss         = require('kss'),
+    path        = require('path'),
+    gutil       = require('gulp-util'),
+    util        = require('util'),
+    assign      = require('object-assign'),
+    handlebars  = require('handlebars'),
+    gulpless    = require('gulp-less'),
+    sass        = require('gulp-sass'),
+    File        = require('vinyl'),
+    through     = require('through'),
+    custom      = [],
     styleguide,
-    handlebarHelpers = require('./handlebarHelpers');
+    handlebarHelpers  = require('./handlebarHelpers');
 
 module.exports = function(opt) {
     'use strict';
@@ -32,17 +32,14 @@ module.exports = function(opt) {
             css: [],
             js: []
         },
-        cache = {
-            partial: {}
-        };
+        cache = {partial: {}};
 
     opt = assign(defaults, opt);
 
     /* Is called for each file and writes all files to buffer */
-
-    function bufferContents(file) {
+    function bufferContents(file){
         if (file.isNull()) return; // ignore
-        if (file.isStream()) return this.emit('error', new PluginError('gulp-kss', 'Streaming not supported'));
+        if (file.isStream()) return this.emit('error', new PluginError('gulp-kss',  'Streaming not supported'));
 
         if (!firstFile) firstFile = file;
         buffer.push(file.contents.toString('utf8'));
@@ -50,8 +47,8 @@ module.exports = function(opt) {
 
     function processKss() {
         var templatePath = path.resolve(process.cwd() + '/' + opt.template),
-            template = fs.readFileSync(templatePath + '/index.html', 'utf8'),
-            self = this;
+            template     = fs.readFileSync(templatePath + '/index.html', 'utf8'),
+            self         = this;
 
         template = handlebars.compile(template);
 
@@ -117,7 +114,8 @@ module.exports = function(opt) {
                                 }
                             }
                         }
-                    } else {
+                    }
+                    else {
                         console.log(' - ' + partial.reference + ': inline markup');
                     }
 
@@ -151,6 +149,7 @@ module.exports = function(opt) {
             if (fs.existsSync(opt.helpers)) {
                 var helperFiles = fs.readdirSync(opt.helpers);
                 helperFiles.forEach(function(fileName) {
+                    console.log(fileName);
                     if (path.extname(fileName) !== '.js') {
                         return;
                     }
@@ -165,7 +164,7 @@ module.exports = function(opt) {
             }
 
             for (i = 0; i < rootCount; i += 1) {
-                childSections = styleguide.section(sectionRoots[i] + '.*');
+                childSections = styleguide.section(sectionRoots[i]+'.*');
                 self.emit('data', generatePage(styleguide, childSections, sectionRoots[i], sectionRoots, template));
             }
 
@@ -208,7 +207,7 @@ module.exports = function(opt) {
         });
     }
 
-    function jsonModifiers(modifiers) {
+    function jsonModifiers (modifiers) {
         return modifiers.map(function(modifier) {
             return {
                 name: modifier.name(),
@@ -241,33 +240,34 @@ module.exports = function(opt) {
             filename = 'index.html';
             console.log(' - homepage');
             // Ensure homepageText is a non-false value.
-            if (fs.existsSync(opt.template + '/styleguide.md')) {
+            if (fs.existsSync(opt.template + '/styleguide.md') ) {
                 homepageText = ' ' + marked(fs.readFileSync(opt.template + '/styleguide.md', 'utf8'));
             }
             if (!homepageText) {
                 homepageText = ' ';
                 console.log('   ...no homepage content found in styleguide.md.');
             }
-        } else {
+        }
+        else {
             filename = 'section-' + kss.KssSection.prototype.encodeReferenceURI(root) + '.html';
             console.log(
-                ' - section ' + root + ' [',
+                ' - section '+root+' [',
                 styleguide.section(root) ? styleguide.section(root).header() : 'Unnamed',
                 ']'
             );
         }
         var content = template({
-            styleguide: styleguide,
-            sections: sections.map(function(section) {
-                return section.JSON(opt.custom);
+                styleguide: styleguide,
+                sections: sections.map(function(section) {
+                    return section.JSON(opt.custom);
+                }),
+                sectionRoots: sectionRoots,
+                rootName: root,
+                homepage: homepageText,
+                overview: false,
+                styles: styles,
+                scripts: scripts
             }),
-            sectionRoots: sectionRoots,
-            rootName: root,
-            homepage: homepageText,
-            overview: false,
-            styles: styles,
-            scripts: scripts
-        }),
             filename = path.join(firstFile.base, filename),
             file = new File({
                 cwd: firstFile.cwd,
@@ -280,16 +280,17 @@ module.exports = function(opt) {
     };
 
     var underscoreAfter = function underscoreAfter(times, func) {
-        return function() {
-            if (--times < 1) {
-                return func.apply(this, arguments);
-            }
-        };
+      return function() {
+        if (--times < 1) {
+          return func.apply(this, arguments);
+        }
+      };
     };
 
     var emitEnd = underscoreAfter(2, function emitEnd(self) {
-        self.emit('end');
+      self.emit('end');
     });
 
     return through(bufferContents, processKss);
 };
+
