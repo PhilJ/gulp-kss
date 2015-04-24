@@ -19,14 +19,12 @@ Pipe all source files you want to document through `gulp-kss`, also the ones whi
 gulp.src( ['array/*.scss', 'ofSource/*.scss', 'sass/files/*.scss'] )
     .pipe( gulpkss({
         template: './node_modules/kss/lib/template',
-            kss: {
-                multiline: true,
-                typos: false
-            },
-            custom: [],
-            helpers: '',
-            css: [],
-            js: []
+        multiline: true,
+        typos: false
+        custom: [],
+        helpers: '',
+        css: [],
+        js: []
     }) )
     .pipe(gulp.dest('styleguide/'));
 
@@ -35,9 +33,8 @@ gulp.src( ['array/*.scss', 'ofSource/*.scss', 'sass/files/*.scss'] )
 
 * **template**: A path relative to your `gulpfile.js` containing a custom template (Default: `./node_modules/kss/lib/template/`)
 * **destination**: A path relative to your `gulpfile.js` where you would your compiled guide to live (Default: `./docs/styleguide/`)
-* **kss**: kss options
-  * **multiline** : As far as the parser is concerned, all but the last two paragraphs (separated by two line breaks) in a block are considered to be part of the description. In the case you don't have any modifiers but a large description it'll try to pick up this scenario. This setting's enabled by default, but you can disable it by adding multiline: false to your options.
-  * **typos**: Thanks to [natural](https://github.com/NaturalNode/natural), `kss-node` can parse keywords phonetically rather then by their string value. In short: make a typo and the library will do its best to read it anyway. Enable this by setting typos to true in the options object.
+* **multiline** : As far as the parser is concerned, all but the last two paragraphs (separated by two line breaks) in a block are considered to be part of the description. In the case you don't have any modifiers but a large description it'll try to pick up this scenario. This setting's enabled by default, but you can disable it by adding multiline: false to your options.
+* **typos**: Thanks to [natural](https://github.com/NaturalNode/natural), `kss-node` can parse keywords phonetically rather then by their string value. In short: make a typo and the library will do its best to read it anyway. Enable this by setting typos to true in the options object.
 * **custom**: A custom property name when parsing KSS comments
 * **helpers**: Specify the location of custom [handlebars helpers](http://bit.ly/kss-helpers) (Default: `./lib/template/helpers`)
 * **css**: Specify the URL of a CSS file to include in the style guide

@@ -21,12 +21,10 @@ module.exports = function(opt) {
         buffer = [],
         defaults = {
             template: './node_modules/kss/lib/template',
-            kss: {
-                mask: {},
-                markdown: true,
-                multiline: true,
-                typos: false
-            },
+            mask: {},
+            markdown: true,
+            multiline: true,
+            typos: false,
             custom: [],
             helpers: '',
             css: [],
@@ -35,6 +33,11 @@ module.exports = function(opt) {
         cache = {partial: {}};
 
     opt = assign(defaults, opt);
+    var templatePath = path.resolve(process.cwd() + '/' + opt.template),
+        template     = fs.readFileSync(templatePath + '/index.html', 'utf8');
+        template = handlebars.compile(template);
+
+
 
     /* Is called for each file and writes all files to buffer */
     function bufferContents(file){
@@ -46,13 +49,9 @@ module.exports = function(opt) {
     }
 
     function processKss() {
-        var templatePath = path.resolve(process.cwd() + '/' + opt.template),
-            template     = fs.readFileSync(templatePath + '/index.html', 'utf8'),
-            self         = this;
+        var self = this;
 
-        template = handlebars.compile(template);
-
-        kss.parse(buffer, opt.kss, function(err, guide) {
+        kss.parse(buffer, opt, function(err, guide) {
             if (err) {
                 console.log('Error', error);
                 throw err;
@@ -142,9 +141,7 @@ module.exports = function(opt) {
                 console.log('...Generating style guide sections:');
             }
 
-            // Now, group all of the sections by their root
-            // reference, and make a page for each.
-            rootCount = sectionRoots.length;
+
             handlebarHelpers(handlebars, styleguide, cache);
             if (fs.existsSync(opt.helpers)) {
                 var helperFiles = fs.readdirSync(opt.helpers);
@@ -154,13 +151,16 @@ module.exports = function(opt) {
                     }
                     opt.helpers = path.normalize(opt.helpers);
                     opt.helpers = path.resolve(process.cwd(), opt.helpers);
-
                     var helper = require(opt.helpers + '/' + fileName);
                     if (typeof helper.register === 'function') {
-                        helper.register(handlebars);
+                        helper.register(handlebars, styleguide);
                     }
                 });
             }
+
+            // Now, group all of the sections by their root
+            // reference, and make a page for each.
+            rootCount = sectionRoots.length;
 
             for (i = 0; i < rootCount; i += 1) {
                 childSections = styleguide.section(sectionRoots[i]+'.*');
@@ -192,29 +192,29 @@ module.exports = function(opt) {
         });
     }
 
-    function jsonSections(sections) {
-        return sections.map(function(section) {
-            return {
-                header: section.header(),
-                description: section.description(),
-                reference: section.reference(),
-                depth: section.data.refDepth,
-                deprecated: section.deprecated(),
-                experimental: section.experimental(),
-                modifiers: jsonModifiers(section.modifiers())
-            };
-        });
-    }
+    // function jsonSections(sections) {
+    //     return sections.map(function(section) {
+    //         return {
+    //             header: section.header(),
+    //             description: section.description(),
+    //             reference: section.reference(),
+    //             depth: section.data.refDepth,
+    //             deprecated: section.deprecated(),
+    //             experimental: section.experimental(),
+    //             modifiers: jsonModifiers(section.modifiers())
+    //         };
+    //     });
+    // }
 
-    function jsonModifiers (modifiers) {
-        return modifiers.map(function(modifier) {
-            return {
-                name: modifier.name(),
-                description: modifier.description(),
-                className: modifier.className()
-            };
-        });
-    }
+    // function jsonModifiers (modifiers) {
+    //     return modifiers.map(function(modifier) {
+    //         return {
+    //             name: modifier.name(),
+    //             description: modifier.description(),
+    //             className: modifier.className()
+    //         };
+    //     });
+    // }
 
     function generatePage(styleguide, sections, root, sectionRoots, template) {
         var files,
@@ -223,9 +223,6 @@ module.exports = function(opt) {
             styles = opt.css,
             scripts = opt.js;
 
-        var args = {
-            styleguide: styleguide
-        }
         // Create the HTML to load the optional CSS and JS.
         for (var key in opt.css) {
             styles = styles + '<link rel="stylesheet" href="' + opt.css[key] + '">\n';
@@ -255,6 +252,13 @@ module.exports = function(opt) {
                 ']'
             );
         }
+        // console.log(opt.custom);
+        // console.log(
+        //     sections.map(function(section) {
+        //         console.log(section);
+        //             return section.JSON(opt.custom);
+        //     })
+        // );
         var content = template({
                 styleguide: styleguide,
                 sections: sections.map(function(section) {
