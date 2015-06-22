@@ -22,7 +22,7 @@ module.exports = function(opt) {
     'use strict';
     if (!opt) opt = {};
     if (!opt.templateDirectory) opt.templateDirectory = __dirname + '/node_modules/kss/lib/template';
-    if (!opt.kssOpts) opt.kssOpts = {};
+    if (!opt.kss) opt.kss = {};
 
     var buffer = [];
     var firstFile = null;
@@ -44,7 +44,7 @@ module.exports = function(opt) {
 
         var self = this;
 
-        kss.parse(buffer, opt.kssOpts, function (err, styleguide) {
+        kss.parse(buffer, opt.kss, function (err, styleguide) {
             if (err) console.log('Error', error);
 
                 var sections = styleguide.section('*.'),
