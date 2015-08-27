@@ -21,7 +21,7 @@ module.exports = function(opt) {
         firstFile = null,
         buffer = [],
         defaults = {
-            template: './node_modules/kss/lib/template',
+            template: './node_modules/gulp-kss/node_modules/kss/lib/template',
             mask: {},
             markdown: true,
             multiline: true,
