@@ -1,6 +1,6 @@
 {
   "name": "gulp-kss",
-  "version": "0.0.1",
+  "version": "2.0.2",
   "description": "Gulp plugin for KSS (Knyle Style Sheets) documentation generation",
   "repository": {
     "type": "git",
@@ -13,18 +13,28 @@
     "generator",
     "gulp"
   ],
-  "contributor": {
-    "name": "Philipp Schächtele",
-    "email": "philipp@digitalwerft.com"
-  },
+  "contributors": [
+    {
+      "name": "Philipp Schächtele",
+      "email": "philipp@digitalwerft.com"
+    },
+    {
+      "name": "Kevin Druff",
+      "email": "kevin.druff@gmail.com"
+    }
+  ],
   "license": "MIT",
   "dependencies": {
-    "kss": "~0.4.0",
+    "kss": "~2.0.2",
     "through": "~2.3.4",
     "gulp": "~3.5.2",
-    "gulp-util": "~2.2.14",
     "marked": "~0.3.1",
+    "object-assign": "~2.0.0",
+    "vinyl": "~0.4.6",
     "handlebars": "~2.0.0-alpha.1",
     "gulp-less": "~1.2.1"
+  },
+  "devDependencies": {
+    "gulp-util": "~2.2.14"
   }
 }
