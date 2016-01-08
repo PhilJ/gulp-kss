@@ -21,7 +21,7 @@ var handlebarHelpers = require('./handlebarHelpers');
 module.exports = function(opt) {
     'use strict';
     if (!opt) opt = {};
-    if (!opt.templateDirectory) opt.templateDirectory = __dirname + '/node_modules/kss/lib/template';
+    if (!opt.templateDirectory) opt.templateDirectory = path.join(path.dirname(require.resolve('kss')), 'lib', 'template');
     if (!opt.kssOpts) opt.kssOpts = {};
 
     var buffer = [];
