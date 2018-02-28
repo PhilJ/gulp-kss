@@ -45,7 +45,7 @@ module.exports = function(opt) {
         var self = this;
 
         kss.parse(buffer, opt.kssOpts, function (err, styleguide) {
-            if (err) console.log('Error', error);
+            if (err) console.log('Error', err);
 
                 var sections = styleguide.section('*.'),
                     i, sectionCount = sections.length,
